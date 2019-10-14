@@ -108,10 +108,11 @@ localStorage.getItem("_shortcutInstalled")!="1" // Shortcut not installed
 ){
 var siteName=document.querySelector('meta[name="apple-mobile-web-app-title"]')
 siteName=siteName?siteName.content:document.title
-
-
-var color=document.querySelector('meta[name="theme-color"]').content.slice(1);
-
+	var color
+try{
+color=document.querySelector('meta[name="theme-color"]').content.slice(1);
+}catch(e){}
+	
 color=closestShortcutColor(color);
 var url=makeShortcutURL(document.location.href, siteName,color + "FF");
 
