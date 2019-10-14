@@ -108,10 +108,8 @@ localStorage.getItem("_shortcutInstalled")!="1" // Shortcut not installed
 ){
 	var siteName=document.title;
 try{
-
+document.querySelector('meta[name="apple-mobile-web-app-title"]').content
 }catch(e){}
-var siteName=document.querySelector('meta[name="apple-mobile-web-app-title"]')
-siteName=siteName?siteName.content:document.title
 	var color
 try{
 color=document.querySelector('meta[name="theme-color"]').content.slice(1);
