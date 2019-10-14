@@ -1,5 +1,5 @@
-const shortcutColors=["FF4351","FD6631","FE9949","FEC418","FFD426","19BD03","55DAE1","1B9AF7","3871DE","7B72E9","DB49D8","000000","ED4694","B4B2A9","A9A9A9"],
-iosSafari=/iP[aoh](d|one).+?Safari/g;
+const shortcutColors=["FF4351","FD6631","FE9949","FEC418","FFD426","19BD03","55DAE1","1B9AF7","3871DE","7B72E9","DB49D8","000000","ED4694","B4B2A9","A9A9A9"];
+const iosSafari=/iP[aoh](d|one).+?Safari/g;
 
 function closestShortcutColor(color) {
 function dist(s, t) {
