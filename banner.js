@@ -11,9 +11,9 @@ if(!color){
 color="000000"
 }
         return shortcutColors.sort(function (a, b) {
-            return dist(a, str) - dist(b, str);
+            return dist(a, color) - dist(b, color);
         })[0];
-    };
+    }
 
 function makeShortcutURL(url, name, color) {
     color = parseInt(color, 16);
@@ -106,14 +106,14 @@ if(
 &&
 localStorage.getItem("_shortcutInstalled")!="1" // Shortcut not installed
 ){
-var name=document.querySelector('meta[name="apple-mobile-web-app-title"]')
-name=name?name.content:document.title
+var siteName=document.querySelector('meta[name="apple-mobile-web-app-title"]')
+siteName=siteName?siteName.content:document.title
 
 
 var color=document.querySelector('meta[name="theme-color"]').content.slice(1);
 
 color=closestShortcutColor(color);
-url=makeShortcutURL(document.location.href, name,color + "FF");
+var url=makeShortcutURL(document.location.href, siteName,color + "FF");
 
 
 var t=document.createElement("div")
@@ -126,5 +126,4 @@ t.innerHTML=`<div style="text-align: center;"><a href="javascript:;" style="colo
 
 document.querySelector(":root").style.transform="translateY(4em)"
 document.querySelector(":root").appendChild(t);
-}
 }
