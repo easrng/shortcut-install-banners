@@ -66,8 +66,6 @@ function makeShortcutURL(url, name, color) {
 	</dict>
 	<key>WFWorkflowImportQuestions</key>
 	<array/>
-<key>WFWorkflowName</key>
-	<string><proxy></string>
 	<key>WFWorkflowInputContentItemClasses</key>
 	<array>
 		<string>WFAppStoreAppContentItem</string>
