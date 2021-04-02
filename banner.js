@@ -1,23 +1,39 @@
-const shortcutColors=["FF4351","FD6631","FE9949","FEC418","FFD426","19BD03","55DAE1","1B9AF7","3871DE","7B72E9","DB49D8","000000","ED4694","B4B2A9","A9A9A9"];
-const iosSafari=/iP[aoh](d|one).+?Safari/g;
+const shortcutColors = ["FF4351", "FD6631", "FE9949", "FEC418", "FFD426", "19BD03", "55DAE1", "1B9AF7", "3871DE", "7B72E9", "DB49D8", "000000", "ED4694", "B4B2A9", "A9A9A9"];
+let iOS = (navigator.userAgent.match(/iP.+? OS (\d+)/) || [])[1];
+let macApp = navigator.userAgent.match(/Macintosh/i) != null;
+if (macApp) {
+    // need to distinguish between Macbook and iPad
+    let canvas = document.createElement("canvas");
+    if (canvas != null) {
+        var context =
+            canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+        if (context) {
+            var info = context.getExtension("WEBGL_debug_renderer_info");
+            if (info) {
+                var renderer = context.getParameter(info.UNMASKED_RENDERER_WEBGL);
+                if (renderer.indexOf("Apple") != -1) iOS = "13";
+            }
+        }
+    }
+}
 
 function closestShortcutColor(color) {
-function dist(s, t) {
-        if (!s.length || !t.length) 
+    function dist(s, t) {
+        if (!s.length || !t.length)
             return 0;
         return dist(s.slice(2), t.slice(2)) + Math.abs(parseInt(s.slice(0, 2), 16) - parseInt(t.slice(0, 2), 16));
     }
-if(!color){
-color="000000"
-}
-        return shortcutColors.sort(function (a, b) {
-            return dist(a, color) - dist(b, color);
-        })[0];
+    if (!color) {
+        color = "000000"
     }
+    return shortcutColors.sort(function(a, b) {
+        return dist(a, color) - dist(b, color);
+    })[0];
+}
 
 function makeShortcutURL(url, name, color) {
     color = parseInt(color, 16);
-    var plist =`
+    var plist = `
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
@@ -93,38 +109,43 @@ function makeShortcutURL(url, name, color) {
 </dict>
 </plist>
 `
-    url = "shortcuts://import-shortcut/?url=" + encodeURIComponent("data:application/octet-stream;base64," + btoa(plist)) + "&name=" + encodeURIComponent(name);
-    return (url);
+    let data = "data:application/octet-stream;base64," + btoa(plist);
+    if (iOS == "13" || iOS == "14") {
+        url =
+            "shortcuts://x-callback-url/run-shortcut?name=Get%20Non-iCloud%20Shortcut&input=text&text=" +
+            encodeURIComponent(JSON.stringify({
+                url: data,
+                name
+            })) +
+            "&x-error=https%3A%2F%2Fshortcutlink.glitch.me%2Ferror.html%3Fname%3DGet%2520Non-iCloud%2520Shortcut%26uri%3Dhttps://www.icloud.com/shortcuts/2f8453a254944961a49ae86240ef57ef";
+    } else if (iOS == "12") {
+        url =
+            "shortcuts://import-workflow?url=" +
+            encodeURIComponent(data) +
+            "&name=" +
+            encodeURIComponent(name);
+    }
+    return url;
 }
 
-if(
-!!navigator.userAgent.match(iosSafari) // is MobileSafari
-&&
-!navigator.standalone // Not Homescreen
-&&
-localStorage.getItem("_shortcutInstalled")!="1" // Shortcut not installed
-){
-	var siteName=document.title;
-try{
-document.querySelector('meta[name="apple-mobile-web-app-title"]').content
-}catch(e){}
-	var color
-try{
-color=document.querySelector('meta[name="theme-color"]').content.slice(1);
-}catch(e){}
-	
-color=closestShortcutColor(color);
-var url=makeShortcutURL(document.location.href, siteName,color + "FF");
-
-
-var t=document.createElement("div")
-t.setAttribute("style","box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif;background-color: #f3f3f2; width: 100%;position:fixed;top:0;left:0;display:flex;flex-direction:row;padding:0.5em;align-items:center;height:4em;transform:translateY(-4em);")
-
-t.innerHTML=`<div style="text-align: center;"><a href="javascript:;" style="color: #7f7f7e;text-decoration:underline;" onclick="localStorage.setItem('_shortcutInstalled','1');document.querySelector(':root').style.transform='';this.parentElement.parentElement.remove();">&times;</a></div>
+if (iOS && !navigator.standalone && localStorage.getItem("_shortcutInstalled") != "1") {
+    let siteName = document.title;
+    try {
+        siteName=document.querySelector('meta[name="apple-mobile-web-app-title"]').content
+    } catch (e) {}
+    let color="7B72E9"
+    try {
+        color = document.querySelector('meta[name="theme-color"]').content.slice(1);
+    } catch (e) {}
+    color = closestShortcutColor(color);
+    let url = makeShortcutURL(document.location.href, siteName, color + "FF");
+    var t = document.createElement("div")
+    t.setAttribute("style", "all:initial;box-sizing:border-box;font-family:system-ui,-apple-system,sans-serif;background-color: #f3f3f2; width: 100%;position:fixed;top:0;left:0;display:flex;flex-direction:row;padding:0.5em;align-items:center;height:4em;transform:translateY(-4em);")
+    t.innerHTML = `<div style="text-align: center;"><a href="javascript:;" style="color: #7f7f7e;text-decoration:underline;" onclick="localStorage.setItem('_shortcutInstalled','1');document.querySelector(':root').style.transform='';this.parentElement.parentElement.remove();">&times;</a></div>
 <div style="box-sizing:border-box;margin-left:0.5em;width: 3em; height: 3em; border-radius:0.8em; background: #${color};padding:0.2em;"><img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIg%0D%0ANTEyIj48cGF0aCBkPSJNMjgwLjUgMjgwLjVsLTQ5LTQ5Yy0uOS0uOS0yLjUtLjctMy4yLjRsLTQ5%0D%0ALjUgOTguNWMtMS4xIDEuOCAxIDMuOSAyLjggMi44bDk4LjUtNDkuNWMxLjEtLjcgMS4zLTIuMy40%0D%0ALTMuMnoiLz48cGF0aCBkPSJNMjU2IDQ4QzE0MS4xIDQ4IDQ4IDE0MS4xIDQ4IDI1NnM5My4xIDIw%0D%0AOCAyMDggMjA4IDIwOC05My4xIDIwOC0yMDhTMzcwLjkgNDggMjU2IDQ4em00MC42IDI0OS4zTDEz%0D%0ANyAzNzcuOGMtMS44IDEuMS0zLjktMS0yLjgtMi44bDgwLjYtMTU5LjZjLjItLjMuNC0uNS43LS43%0D%0ATDM3NSAxMzQuMmMxLjgtMS4xIDMuOSAxIDIuOCAyLjhsLTgwLjYgMTU5LjZjLS4xLjMtLjMuNS0u%0D%0ANi43eiIvPjwvc3ZnPg==" style="filter:invert(1);width:100%;height:100%;"></div>
 <div style="color: #3a3a39;margin-left:0.5em;flex-grow:1;">${siteName}<div style="font-size:0.8em;">GET — On Shortcuts</div></div>
 <div style="text-align: center;"><a style="text-decoration: none; color: #007aff;margin-left:0.5em;" href="${url}" onclick="localStorage.setItem('_shortcutInstalled','1');document.querySelector(':root').style.transform='';this.parentElement.parentElement.remove();">View</a></div>`
 
-document.querySelector(":root").style.transform="translateY(4em)"
-document.querySelector(":root").appendChild(t);
+    document.querySelector(":root").style.transform = "translateY(4em)"
+    document.querySelector(":root").appendChild(t);
 }
